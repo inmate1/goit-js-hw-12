@@ -2,56 +2,102 @@ import iziToast from 'izitoast';
 
 import SimpleLightbox from 'simplelightbox';
 
-const imgGallery = document.querySelector('.img-list');
-
 import { fetchImages } from './js/pixabay-api';
 
-import { createMarkup, showLoader, hideLoader } from './js/render-functions';
+import {
+  createMarkup,
+  showLoader,
+  hideLoader,
+  imgGallery,
+} from './js/render-functions';
 
 const form = document.querySelector('.search-form');
 form.addEventListener('submit', onSubmit);
+const btnLoadMore = document.querySelector('.btn-load-more');
+btnLoadMore.addEventListener('click', onLoad);
 
-function onSubmit(event) {
+let userSearch = '';
+let page;
+let limit = 15;
+let totalHits;
+
+const API_KEY = '43226276-a07a0c17e428cfffb021b9b05';
+const params = new URLSearchParams({
+  key: API_KEY,
+  image_type: 'photo',
+  orientation: 'horizontal',
+  safesearch: true,
+  q: userSearch,
+  per_page: limit,
+  page: page,
+});
+
+async function onSubmit(event) {
   event.preventDefault();
+  page = 1;
   imgGallery.innerHTML = '';
   const elements = event.target.elements;
-  const userSearch = elements.images.value.trim();
+  userSearch = elements.images.value.trim();
   if (userSearch === '') {
     return;
   }
-  showLoader();
+  btnLoadMore.style.display = 'none';
+  params.set('q', userSearch);
+  try {
+    showLoader();
 
-  fetchImages(userSearch)
-    .then(data => {
-      imgGallery.insertAdjacentHTML('beforeend', createMarkup(data));
-      gallery.refresh();
-    })
-    .catch(error => {
-      iziToast.show({
-        titleColor: '#fff',
-        message:
-          'Sorry, there are no images matching<br>your search query.Please try again!',
-        messageColor: '#fff',
-        messageSize: '16px',
-        messageLineHeight: '150%',
-        backgroundColor: ' #ef4040',
-        // icon: 'img/error.svg',
-        // iconUrl: './img/error.svg',
-        position: 'topRight',
-        close: true,
-        closeOnEscape: false,
-        closeOnClick: false,
-        timeout: 5000,
-        resetOnHover: true,
-        icon: 'img/error.svg',
-        transitionIn: 'flipInX',
-        transitionOut: 'flipOutX',
-      });
-    })
-    .finally(() => {
-      hideLoader();
+    const data = await fetchImages(params);
+    totalHits = data.totalHits;
+    createMarkup(data.hits);
+    gallery.refresh();
+
+    const galleryCard = document.querySelector('.list-item');
+    const cardHeight = galleryCard.getBoundingClientRect().height;
+    window.scrollBy({
+      top: cardHeight * 2.7,
+      behavior: 'smooth',
     });
+
+    if (totalHits > limit) {
+      page += 1;
+      btnLoadMore.style.display = 'block';
+    }
+  } catch (error) {
+    iziToast.show(iziTParams);
+  } finally {
+    hideLoader();
+  }
   form.reset();
+}
+
+async function onLoad(event) {
+  const totalPages = Math.ceil(totalHits / limit);
+  params.set('page', page);
+
+  try {
+    showLoader();
+    const data = await fetchImages(params);
+    totalHits = data.totalHits;
+    createMarkup(data.hits);
+    gallery.refresh();
+    const galleryCard = document.querySelector('.list-item');
+    const cardHeight = galleryCard.getBoundingClientRect().height;
+    window.scrollBy({
+      top: cardHeight * 2.7,
+      behavior: 'smooth',
+    });
+    if (page < totalPages) {
+      page += 1;
+    } else if (page === totalPages) {
+      btnLoadMore.style.display = 'none';
+      iziTParams.message =
+        "We're sorry, but you've reached the end of search results.";
+      iziToast.show(iziTParams);
+    }
+  } catch (error) {
+    iziToast.show(iziTParams);
+  }
+  hideLoader();
 }
 
 let gallery = new SimpleLightbox('.img-list .list-link', {
@@ -66,3 +112,23 @@ gallery.on('shown.simplelightbox', function () {
   enlargedImg.style.width = '100%';
   enlargedImg.style.maxHeight = '100%';
 });
+
+const iziTParams = {
+  titleColor: '#fff',
+  message:
+    'Sorry, there are no images matching<br>your search query.Please try again!',
+  messageColor: '#fff',
+  messageSize: '16px',
+  messageLineHeight: '150%',
+  backgroundColor: ' #ef4040',
+  // icon: 'errIcon',
+  iconUrl: 'img/error.svg',
+  position: 'topRight',
+  close: true,
+  closeOnEscape: false,
+  closeOnClick: false,
+  timeout: 5000,
+  resetOnHover: true,
+  transitionIn: 'flipInX',
+  transitionOut: 'flipOutX',
+};

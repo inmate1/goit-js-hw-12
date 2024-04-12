@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
   <body>
+    <div class="wrapper">
     <div class="form-container">
       <form action="submit" class="search-form">
         <label for="images" class="label"></label>
@@ -22,9 +23,11 @@
         />
         <button class="search-button" type="submit">Search</button>
       </form>
-    </div>
-    <ul class="img-list"></ul>
-    <div class="loader"></div>
-    <!-- <script async type="module" src="./main.js"></script> -->
+    </div>   
+    <ul class="img-list"></ul>  
+    <button type="button" class="btn-load-more" style="display: none;" >Load more</button>
+ </div>
+    <span class="loader" style="display: none;">Loading images,&nbsp;ng</span>
+    <script async type="module" src="./main.js"></script>
   </body>
 </html>

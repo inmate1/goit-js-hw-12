@@ -1,6 +1,7 @@
+export const imgGallery = document.querySelector('.img-list');
 
 export function createMarkup(array) {
-  return array
+  const markup = array
     .map(
       ({
         id,
@@ -34,10 +35,8 @@ export function createMarkup(array) {
           </li>`
     )
     .join('');
+  imgGallery.insertAdjacentHTML('beforeend', markup);
 }
-
-hideLoader();
-
 
 export function showLoader() {
   const loader = document.querySelector('.loader');
