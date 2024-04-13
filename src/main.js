@@ -1,5 +1,5 @@
 import iziToast from 'izitoast';
-
+import 'izitoast/dist/css/iziToast.min.css';
 import SimpleLightbox from 'simplelightbox';
 
 import { fetchImages } from './js/pixabay-api';
@@ -51,13 +51,6 @@ async function onSubmit(event) {
     createMarkup(data.hits);
     gallery.refresh();
 
-    const galleryCard = document.querySelector('.list-item');
-    const cardHeight = galleryCard.getBoundingClientRect().height;
-    window.scrollBy({
-      top: cardHeight * 2.7,
-      behavior: 'smooth',
-    });
-
     if (totalHits > limit) {
       page += 1;
       btnLoadMore.style.display = 'block';
@@ -72,6 +65,7 @@ async function onSubmit(event) {
 
 async function onLoad(event) {
   const totalPages = Math.ceil(totalHits / limit);
+  btnLoadMore.disabled = true;
   params.set('page', page);
 
   try {
@@ -80,10 +74,11 @@ async function onLoad(event) {
     totalHits = data.totalHits;
     createMarkup(data.hits);
     gallery.refresh();
+     btnLoadMore.disabled = false;
     const galleryCard = document.querySelector('.list-item');
     const cardHeight = galleryCard.getBoundingClientRect().height;
     window.scrollBy({
-      top: cardHeight * 2.7,
+      top: cardHeight * 2,
       behavior: 'smooth',
     });
     if (page < totalPages) {
@@ -112,6 +107,10 @@ gallery.on('shown.simplelightbox', function () {
   enlargedImg.style.width = '100%';
   enlargedImg.style.maxHeight = '100%';
 });
+
+
+
+
 
 const iziTParams = {
   titleColor: '#fff',
