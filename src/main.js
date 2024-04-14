@@ -29,12 +29,13 @@ const params = new URLSearchParams({
   safesearch: true,
   q: userSearch,
   per_page: limit,
-  page: page,
+  page,
 });
 
 async function onSubmit(event) {
   event.preventDefault();
   page = 1;
+  params.set('page', page);
   imgGallery.innerHTML = '';
   const elements = event.target.elements;
   userSearch = elements.images.value.trim();
@@ -74,7 +75,7 @@ async function onLoad(event) {
     totalHits = data.totalHits;
     createMarkup(data.hits);
     gallery.refresh();
-     btnLoadMore.disabled = false;
+    btnLoadMore.disabled = false;
     const galleryCard = document.querySelector('.list-item');
     const cardHeight = galleryCard.getBoundingClientRect().height;
     window.scrollBy({
@@ -107,10 +108,6 @@ gallery.on('shown.simplelightbox', function () {
   enlargedImg.style.width = '100%';
   enlargedImg.style.maxHeight = '100%';
 });
-
-
-
-
 
 const iziTParams = {
   titleColor: '#fff',
